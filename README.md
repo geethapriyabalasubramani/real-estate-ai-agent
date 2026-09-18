@@ -1,41 +1,75 @@
-*## Planned stack*
+# React + TypeScript + Vite
 
-*| Layer | Technologies |*
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-*|-------|--------------|*
+Currently, two official plugins are available:
 
-*| Frontend | React, TypeScript, Vite, React Testing Library |*
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-*| Backend | [ASP.NET](http://ASP.NET) Core, C#, Entity Framework Core |*
+## React Compiler
 
-*| Database | PostgreSQL, pgvector |*
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-*| AI | AWS Bedrock (Claude), Semantic Kernel, RAG, tool calling |*
+## Expanding the ESLint configuration
 
-*| Engineering | Docker, GitHub Actions, Redis, Kafka, xUnit, Jest |*
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-*## Development status*
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-*
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-- [x] Phase 1 — GitHub repository*
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 
-*
+```
 
-- [x] Phase 1 — Project structure*
+You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
 
-*
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-- [ ] Phase 1 — React frontend scaffold*
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 
-*
-
-- [ ] Phase 1 — [ASP.NET](http://ASP.NET) Core backend scaffold*
-
-*
-
-- [ ] Phase 1 — PostgreSQL + EF Core*
-
-*## License*
-
-*TBD*
+```
