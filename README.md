@@ -1,23 +1,41 @@
-*# Minimal README*
+*## Planned stack*
 
-@"
+*| Layer | Technologies |*
 
-# Real Estate AI Agent
+*|-------|--------------|*
 
-AI-powered real estate search and listing agent.
+*| Frontend | React, TypeScript, Vite, React Testing Library |*
 
-## Stack (planned)
+*| Backend | [ASP.NET](http://ASP.NET) Core, C#, Entity Framework Core |*
 
-- Frontend: React, TypeScript, Vite
+*| Database | PostgreSQL, pgvector |*
 
-- Backend: [ASP.NET](http://ASP.NET) Core, C#, EF Core
+*| AI | AWS Bedrock (Claude), Semantic Kernel, RAG, tool calling |*
 
-- Database: PostgreSQL, pgvector
+*| Engineering | Docker, GitHub Actions, Redis, Kafka, xUnit, Jest |*
 
-- AI: AWS Bedrock (Claude), Semantic Kernel, RAG
+*## Development status*
 
-## Status
+*
 
-Phase 1 — Project foundation (in progress)
+- [x] Phase 1 — GitHub repository*
 
-"@ | Out-File -Encoding utf8 [README.md](http://README.md)
+*
+
+- [x] Phase 1 — Project structure*
+
+*
+
+- [ ] Phase 1 — React frontend scaffold*
+
+*
+
+- [ ] Phase 1 — [ASP.NET](http://ASP.NET) Core backend scaffold*
+
+*
+
+- [ ] Phase 1 — PostgreSQL + EF Core*
+
+*## License*
+
+*TBD*

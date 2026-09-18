@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / editor
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment / secrets (never commit)
+.env
+.env.*
+!.env.example
+*.user
+secrets.json
+
+# Frontend (will apply once we scaffold)
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Backend (will apply once we scaffold)
+backend/**/bin/
+backend/**/obj/
+backend/**/out/
+backend/**/*.user
+backend/.vs/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker (later)
+docker-compose.override.yml
