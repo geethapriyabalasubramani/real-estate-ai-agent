@@ -101,4 +101,35 @@ public class PropertiesController : ControllerBase
 
         return Ok(new PagedPropertyResponse(items, page, pageSize, totalCount));
     }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<PropertyDetailDto>> GetById(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var property = await _db.Properties
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Select(p => new PropertyDetailDto(
+                p.Id,
+                p.AddressLine1,
+                p.City,
+                p.State,
+                p.PostalCode,
+                p.Bedrooms,
+                p.Bathrooms,
+                p.Price,
+                p.SquareFeet,
+                p.HasGarage,
+                p.Description,
+                p.CreatedAtUtc))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (property is null)
+        {
+            return NotFound(new { error = $"Property '{id}' was not found." });
+        }
+
+        return Ok(property);
+    }
 }
