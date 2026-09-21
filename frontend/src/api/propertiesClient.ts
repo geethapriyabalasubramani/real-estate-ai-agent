@@ -32,8 +32,7 @@ export async function searchProperties(
   const response = await fetch(url, { signal });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `Search failed (${response.status})`);
+    throw new Error(await readErrorMessage(response));
   }
 
   return response.json() as Promise<PagedPropertyResponse>;
@@ -55,3 +54,25 @@ export async function getPropertyById(id: string, signal?: AbortSignal): Promise
 
   return response.json() as Promise<PropertyDetail>;
 }
+async function readErrorMessage(response: Response): Promise<string> {
+    const text = await response.text();
+    if (!text) return `Request failed (${response.status})`;
+  
+    try {
+      const body = JSON.parse(text) as {
+        title?: string;
+        errors?: Record<string, string[]>;
+      };
+  
+      if (body.errors) {
+        const messages = Object.values(body.errors).flat();
+        if (messages.length > 0) return messages.join(' ');
+      }
+  
+      if (body.title) return body.title;
+    } catch {
+      // not JSON
+    }
+  
+    return text;
+  }

@@ -2,6 +2,11 @@ import { type FormEvent, useState } from 'react';
 import { searchProperties } from '../api/propertiesClient';
 import type { PropertyListItem } from '../types/property';
 import { PropertyCard } from './PropertyCard';
+import {
+  hasValidationErrors,
+  validateSearchForm,
+  type SearchFieldErrors,
+} from '../utils/searchValidation';
 
 export function PropertySearch() {
   const [city, setCity] = useState('San Jose');
@@ -13,12 +18,17 @@ export function PropertySearch() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<SearchFieldErrors>({});
 
   async function runSearch(e?: FormEvent) {
     e?.preventDefault();
-    setLoading(true);
     setError(null);
-
+    const validation = validateSearchForm({ city, bedrooms, maxPrice, hasGarage });
+    setFieldErrors(validation);
+    if (hasValidationErrors(validation)) {
+      return;
+    }
+    setLoading(true);
     try {
       const result = await searchProperties({
         city,
@@ -44,18 +54,30 @@ export function PropertySearch() {
       <form onSubmit={runSearch} style={{ display: 'grid', gap: '0.75rem', maxWidth: 480 }}>
         <label>
           City
-          <input value={city} onChange={(e) => setCity(e.target.value)} style={{ width: '100%' }} />
+          <input
+            value={city}
+            maxLength={100}
+            onChange={(e) => setCity(e.target.value)}
+            style={{ width: '100%' }}
+          />
         </label>
+        {fieldErrors.city && (
+          <span style={{ color: 'crimson', fontSize: '0.875rem' }}>{fieldErrors.city}</span>
+        )}
         <label>
           Bedrooms
           <input
             type="number"
             min={0}
+            max={20}
             value={bedrooms}
             onChange={(e) => setBedrooms(e.target.value)}
             style={{ width: '100%' }}
           />
         </label>
+        {fieldErrors.bedrooms && (
+          <span style={{ color: 'crimson', fontSize: '0.875rem' }}>{fieldErrors.bedrooms}</span>
+        )}
         <label>
           Max price
           <input
@@ -66,6 +88,9 @@ export function PropertySearch() {
             style={{ width: '100%' }}
           />
         </label>
+        {fieldErrors.maxPrice && (
+          <span style={{ color: 'crimson', fontSize: '0.875rem' }}>{fieldErrors.maxPrice}</span>
+        )}
         <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <input
             type="checkbox"
