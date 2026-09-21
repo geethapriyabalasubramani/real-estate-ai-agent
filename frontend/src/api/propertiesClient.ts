@@ -1,4 +1,4 @@
-import type { PagedPropertyResponse } from '../types/property';
+import type { PagedPropertyResponse, PropertyDetail } from '../types/property';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -37,4 +37,21 @@ export async function searchProperties(
   }
 
   return response.json() as Promise<PagedPropertyResponse>;
+}
+
+
+export async function getPropertyById(id: string, signal?: AbortSignal): Promise<PropertyDetail> {
+  const url = `${baseUrl}/api/properties/${id}`;
+  const response = await fetch(url, { signal });
+
+  if (response.status === 404) {
+    throw new Error('Property not found.');
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Request failed (${response.status})`);
+  }
+
+  return response.json() as Promise<PropertyDetail>;
 }
