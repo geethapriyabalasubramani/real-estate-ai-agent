@@ -28,7 +28,11 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    if (app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+{
     await PropertySeeder.SeedAsync(db);
+}
+    
 }
 
 if (app.Environment.IsDevelopment())
@@ -43,3 +47,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
