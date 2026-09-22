@@ -33,6 +33,21 @@ public class ApplicationDbContext : DbContext
             entity.Property(p => p.Description).HasMaxLength(4000);
 
             entity.Property(p => p.CreatedAtUtc).IsRequired();
+
+            entity.HasIndex(p => p.City)
+                .HasDatabaseName("IX_Properties_City");
+
+            entity.HasIndex(p => p.Bedrooms)
+                .HasDatabaseName("IX_Properties_Bedrooms");
+
+            entity.HasIndex(p => p.HasGarage)
+                .HasDatabaseName("IX_Properties_HasGarage");
+
+            entity.HasIndex(p => p.Price)
+                .HasDatabaseName("IX_Properties_Price");
+
+            entity.HasIndex(p => new { p.City, p.Bedrooms, p.Price })
+                .HasDatabaseName("IX_Properties_City_Bedrooms_Price");
         });
     }
 }
