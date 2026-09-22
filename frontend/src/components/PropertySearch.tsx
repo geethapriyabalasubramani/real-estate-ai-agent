@@ -51,7 +51,11 @@ export function PropertySearch() {
 
   return (
     <section>
-      <form onSubmit={runSearch} style={{ display: 'grid', gap: '0.75rem', maxWidth: 480 }}>
+      <form
+        noValidate
+        onSubmit={runSearch}
+        style={{ display: 'grid', gap: '0.75rem', maxWidth: 480 }}
+      >
         <label>
           City
           <input
