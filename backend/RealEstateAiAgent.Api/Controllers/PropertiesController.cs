@@ -1,3 +1,5 @@
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RealEstateAiAgent.Api.Contracts;
@@ -6,7 +8,9 @@ using RealEstateAiAgent.Api.Data;
 namespace RealEstateAiAgent.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion("1.0")]
+[AllowAnonymous]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class PropertiesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;

@@ -4,7 +4,8 @@ using RealEstateAiAgent.Api.Contracts;
 
 namespace RealEstateAiAgent.Api.Tests;
 
-public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory>
+[Collection("Api")]
+public class PropertiesEndpointTests
 {
     private readonly HttpClient _client;
 
@@ -18,7 +19,7 @@ public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory
     [Fact]
     public async Task Search_ReturnsOk_AndSeededItems()
     {
-        var response = await _client.GetAsync("/api/properties?page=1&pageSize=50");
+        var response = await _client.GetAsync("/api/v1/properties?page=1&pageSize=50");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -31,7 +32,7 @@ public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory
     [Fact]
     public async Task Search_FiltersByBedrooms_WithoutCity()
     {
-        var response = await _client.GetAsync("/api/properties?bedrooms=2&page=1&pageSize=50");
+        var response = await _client.GetAsync("/api/v1/properties?bedrooms=2&page=1&pageSize=50");
 
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<PagedPropertyResponse>();
@@ -44,7 +45,7 @@ public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory
     [Fact]
     public async Task Search_Returns400_WhenPageIsInvalid()
     {
-        var response = await _client.GetAsync("/api/properties?page=0");
+        var response = await _client.GetAsync("/api/v1/properties?page=0");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -52,7 +53,7 @@ public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory
     [Fact]
     public async Task Search_Returns400_WhenMinPriceGreaterThanMaxPrice()
     {
-        var response = await _client.GetAsync("/api/properties?minPrice=500000&maxPrice=100000");
+        var response = await _client.GetAsync("/api/v1/properties?minPrice=500000&maxPrice=100000");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -61,7 +62,7 @@ public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory
     public async Task GetById_Returns200_ForSeededProperty()
     {
         var id = Guid.Parse("11111111-1111-1111-1111-111111111101");
-        var response = await _client.GetAsync($"/api/properties/{id}");
+        var response = await _client.GetAsync($"/api/v1/properties/{id}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -75,7 +76,7 @@ public class PropertiesEndpointTests : IClassFixture<CustomWebApplicationFactory
     public async Task GetById_Returns404_WhenMissing()
     {
         var id = Guid.Parse("00000000-0000-0000-0000-000000000000");
-        var response = await _client.GetAsync($"/api/properties/{id}");
+        var response = await _client.GetAsync($"/api/v1/properties/{id}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

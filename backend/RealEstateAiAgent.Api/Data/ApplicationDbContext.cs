@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Property> Properties => Set<Property>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,5 +50,14 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(p => new { p.City, p.Bedrooms, p.Price })
                 .HasDatabaseName("IX_Properties_City_Bedrooms_Price");
         });
+        modelBuilder.Entity<User>(entity =>
+{
+    entity.ToTable("Users");
+    entity.HasKey(u => u.Id);
+    entity.Property(u => u.Email).HasMaxLength(256).IsRequired();
+    entity.HasIndex(u => u.Email).IsUnique();
+    entity.Property(u => u.PasswordHash).IsRequired();
+    entity.Property(u => u.CreatedAtUtc).IsRequired();
+});
     }
 }

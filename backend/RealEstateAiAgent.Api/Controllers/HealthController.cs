@@ -1,9 +1,12 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using RealEstateAiAgent.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using RealEstateAiAgent.Api.Data;
+
 namespace RealEstateAiAgent.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/[controller]")]
 public class HealthController : ControllerBase
 {
