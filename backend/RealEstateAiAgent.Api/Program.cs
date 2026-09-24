@@ -107,6 +107,7 @@ try
         });
 
     builder.Services.AddAuthorization();
+    builder.Services.AddMemoryCache();
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
