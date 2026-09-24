@@ -28,7 +28,7 @@ export async function searchProperties(
   if (params.page) query.set('page', String(params.page));
   if (params.pageSize) query.set('pageSize', String(params.pageSize));
 
-  const url = `${baseUrl}/api/properties?${query.toString()}`;
+  const url = `${baseUrl}/api/v1/properties?${query.toString()}`;
   const response = await fetch(url, { signal });
 
   if (!response.ok) {
@@ -40,7 +40,7 @@ export async function searchProperties(
 
 
 export async function getPropertyById(id: string, signal?: AbortSignal): Promise<PropertyDetail> {
-  const url = `${baseUrl}/api/properties/${id}`;
+  const url = `${baseUrl}/api/v1/properties/${id}`;
   const response = await fetch(url, { signal });
 
   if (response.status === 404) {
