@@ -21,6 +21,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    // --- Logging (skip in integration tests) ---
     if (!builder.Environment.IsEnvironment("Testing"))
     {
         builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -29,6 +30,7 @@ try
             .Enrich.FromLogContext());
     }
 
+    // --- MVC / API ---
     builder.Services.AddControllers();
     builder.Services.AddApiVersioning(options =>
     {
@@ -56,6 +58,7 @@ try
         });
     });
 
+    // --- Data ---
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         if (builder.Environment.IsEnvironment("Testing"))
@@ -68,6 +71,7 @@ try
         }
     });
 
+    // --- Auth (JWT) ---
     builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
     var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
@@ -109,11 +113,18 @@ try
     builder.Services.AddAuthorization();
     builder.Services.AddMemoryCache();
 
+    // --- Bedrock / Semantic Kernel (not needed for integration tests) ---
+    if (!builder.Environment.IsEnvironment("Testing"))
+    {
+        builder.Services.AddBedrockAi(builder.Configuration);
+    }
+
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
     var app = builder.Build();
 
+    // --- Middleware pipeline ---
     app.UseExceptionHandler();
 
     if (!app.Environment.IsEnvironment("Testing"))
@@ -139,7 +150,11 @@ try
         app.UseSwaggerUI();
     }
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
+
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
