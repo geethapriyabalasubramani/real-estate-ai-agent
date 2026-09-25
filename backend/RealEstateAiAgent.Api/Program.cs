@@ -93,6 +93,7 @@ try
 
     builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+    builder.Services.AddScoped<IPropertySearchService, PropertySearchService>();
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -117,6 +118,7 @@ try
     if (!builder.Environment.IsEnvironment("Testing"))
     {
         builder.Services.AddBedrockAi(builder.Configuration);
+        builder.Services.AddScoped<INaturalLanguagePropertySearchService, NaturalLanguagePropertySearchService>();
     }
 
     builder.Services.AddEndpointsApiExplorer();

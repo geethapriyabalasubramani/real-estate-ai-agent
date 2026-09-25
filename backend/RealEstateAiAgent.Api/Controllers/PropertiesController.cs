@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using RealEstateAiAgent.Api.Contracts;
 using RealEstateAiAgent.Api.Data;
+using RealEstateAiAgent.Api.Services;
 
 namespace RealEstateAiAgent.Api.Controllers;
 
@@ -16,11 +17,16 @@ public class PropertiesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
     private readonly IMemoryCache _cache;
+    private readonly IPropertySearchService _propertySearch;
 
-    public PropertiesController(ApplicationDbContext db, IMemoryCache cache)
+    public PropertiesController(
+        ApplicationDbContext db,
+        IMemoryCache cache,
+        IPropertySearchService propertySearch)
     {
         _db = db;
         _cache = cache;
+        _propertySearch = propertySearch;
     }
 
     [HttpGet]
@@ -43,54 +49,7 @@ public class PropertiesController : ControllerBase
 
         Response.Headers["X-Cache"] = "MISS";
 
-        var dbQuery = _db.Properties.AsNoTracking();
-
-        if (!string.IsNullOrWhiteSpace(query.City))
-        {
-            var cityTerm = query.City.Trim();
-            dbQuery = dbQuery.Where(p => EF.Functions.ILike(p.City, cityTerm));
-        }
-
-        if (query.Bedrooms is not null)
-        {
-            dbQuery = dbQuery.Where(p => p.Bedrooms == query.Bedrooms);
-        }
-
-        if (query.MinPrice is not null)
-        {
-            dbQuery = dbQuery.Where(p => p.Price >= query.MinPrice);
-        }
-
-        if (query.MaxPrice is not null)
-        {
-            dbQuery = dbQuery.Where(p => p.Price <= query.MaxPrice);
-        }
-
-        if (query.HasGarage is not null)
-        {
-            dbQuery = dbQuery.Where(p => p.HasGarage == query.HasGarage);
-        }
-
-        var totalCount = await dbQuery.CountAsync(cancellationToken);
-
-        var items = await dbQuery
-            .OrderBy(p => p.Price)
-            .Skip((query.Page - 1) * query.PageSize)
-            .Take(query.PageSize)
-            .Select(p => new PropertyListItemDto(
-                p.Id,
-                p.AddressLine1,
-                p.City,
-                p.State,
-                p.PostalCode,
-                p.Bedrooms,
-                p.Bathrooms,
-                p.Price,
-                p.SquareFeet,
-                p.HasGarage))
-            .ToListAsync(cancellationToken);
-
-        var response = new PagedPropertyResponse(items, query.Page, query.PageSize, totalCount);
+        var response = await _propertySearch.SearchAsync(query, cancellationToken);
 
         _cache.Set(
             cacheKey,
