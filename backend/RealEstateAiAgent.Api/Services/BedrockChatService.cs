@@ -8,11 +8,6 @@ using RealEstateAiAgent.Api.Configuration;
 
 namespace RealEstateAiAgent.Api.Services;
 
-public interface IBedrockChatService
-{
-    Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default);
-}
-
 public class BedrockChatService : IBedrockChatService
 {
     private readonly Kernel _kernel;
@@ -24,12 +19,15 @@ public class BedrockChatService : IBedrockChatService
         _options = options.Value;
     }
 
-    public async Task<string> CompleteAsync(string prompt, CancellationToken cancellationToken = default)
+    public async Task<string> CompleteAsync(
+        string prompt,
+        string? systemPrompt = null,
+        CancellationToken cancellationToken = default)
     {
         var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
 
         var history = new ChatHistory();
-        history.AddSystemMessage(_options.SystemPrompt);
+        history.AddSystemMessage(systemPrompt ?? _options.SystemPrompt);
         history.AddUserMessage(prompt);
 
         var maxTokens = _options.MaxTokens >= 1 ? _options.MaxTokens : 256;
@@ -56,6 +54,7 @@ public class BedrockChatService : IBedrockChatService
         return text.Trim();
     }
 }
+
 
 public static class BedrockServiceCollectionExtensions
 {

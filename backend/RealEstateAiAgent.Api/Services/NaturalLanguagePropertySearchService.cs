@@ -1,10 +1,15 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
+using RealEstateAiAgent.Api.Configuration;
 using RealEstateAiAgent.Api.Contracts;
+using RealEstateAiAgent.Api.Exceptions;
 
 namespace RealEstateAiAgent.Api.Services;
 
 public class NaturalLanguagePropertySearchService : INaturalLanguagePropertySearchService
 {
+    private const string CriteriaParseError = "Could not interpret the search query.";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -12,33 +17,38 @@ public class NaturalLanguagePropertySearchService : INaturalLanguagePropertySear
 
     private readonly IBedrockChatService _bedrockChatService;
     private readonly IPropertySearchService _propertySearch;
+    private readonly BedrockOptions _options;
 
     public NaturalLanguagePropertySearchService(
         IBedrockChatService bedrockChatService,
-        IPropertySearchService propertySearch)
+        IPropertySearchService propertySearch,
+        IOptions<BedrockOptions> bedrockOptions)
     {
         _bedrockChatService = bedrockChatService;
         _propertySearch = propertySearch;
+        _options = bedrockOptions.Value;
     }
 
     public async Task<NaturalLanguageSearchResponse> SearchAsync(
         NaturalLanguageSearchRequest request,
         CancellationToken cancellationToken = default)
     {
-        var prompt =
-            """
-            Extract property search filters from the user message below.
-            Reply with JSON only (no markdown), using this shape:
-            {"city": string or null, "bedrooms": number or null, "minPrice": number or null, "maxPrice": number or null, "hasGarage": true/false or null}
-
-            User message:
-            """
-            + request.Query.Trim();
-
-        var raw = await _bedrockChatService.CompleteAsync(prompt, cancellationToken);
+        var userPrompt = "User message:\n" + request.Query.Trim();
+        var raw = await _bedrockChatService.CompleteAsync(
+            userPrompt,
+            _options.ExtractionSystemPrompt,
+            cancellationToken);
         var criteria = ParseCriteria(raw);
 
-        var query = new PropertySearchQuery
+        var query = MapToQuery(criteria);
+        PropertySearchQueryValidator.Validate(query);
+
+        var results = await _propertySearch.SearchAsync(query, cancellationToken);
+        return new NaturalLanguageSearchResponse(criteria, results);
+    }
+
+    private static PropertySearchQuery MapToQuery(AiPropertySearchCriteria criteria) =>
+        new()
         {
             City = criteria.City,
             Bedrooms = criteria.Bedrooms,
@@ -49,21 +59,17 @@ public class NaturalLanguagePropertySearchService : INaturalLanguagePropertySear
             PageSize = 10,
         };
 
-        var results = await _propertySearch.SearchAsync(query, cancellationToken);
-        return new NaturalLanguageSearchResponse(criteria, results);
-    }
-
     private static AiPropertySearchCriteria ParseCriteria(string raw)
     {
         var json = ExtractJsonObject(raw);
         try
         {
             return JsonSerializer.Deserialize<AiPropertySearchCriteria>(json, JsonOptions)
-                ?? throw new InvalidOperationException("Could not interpret the search query.");
+                ?? throw new AiCriteriaParseException(CriteriaParseError);
         }
         catch (JsonException)
         {
-            throw new InvalidOperationException("Could not interpret the search query.");
+            throw new AiCriteriaParseException(CriteriaParseError);
         }
     }
 
@@ -91,7 +97,7 @@ public class NaturalLanguagePropertySearchService : INaturalLanguagePropertySear
         var end = trimmed.LastIndexOf('}');
         if (start < 0 || end <= start)
         {
-            throw new InvalidOperationException("Could not interpret the search query.");
+            throw new AiCriteriaParseException(CriteriaParseError);
         }
 
         return trimmed[start..(end + 1)];

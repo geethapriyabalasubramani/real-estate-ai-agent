@@ -35,7 +35,9 @@ public class AiController : ControllerBase
 
         try
         {
-            var text = await _bedrockChatService.CompleteAsync(request.Prompt, cancellationToken);
+            var text = await _bedrockChatService.CompleteAsync(
+                request.Prompt,
+                cancellationToken: cancellationToken);
             return Ok(new AiCompleteResponse(text, _bedrockOptions.ModelId));
         }
         catch (AmazonServiceException ex)

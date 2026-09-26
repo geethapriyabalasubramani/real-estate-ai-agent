@@ -3,6 +3,7 @@ using Amazon.Runtime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealEstateAiAgent.Api.Contracts;
+using RealEstateAiAgent.Api.Exceptions;
 using RealEstateAiAgent.Api.Services;
 
 namespace RealEstateAiAgent.Api.Controllers;
@@ -35,6 +36,20 @@ public class AiSearchController : ControllerBase
             var response = await _naturalLanguageSearch.SearchAsync(request, cancellationToken);
             return Ok(response);
         }
+        catch (AiCriteriaValidationException ex)
+        {
+            var problem = new ValidationProblemDetails(ex.Errors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "AI-generated criteria failed validation.",
+                Detail = ex.Message,
+            };
+            return ValidationProblem(problem);
+        }
+        catch (AiCriteriaParseException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (AmazonServiceException ex)
         {
             return StatusCode(502, new { error = "Bedrock request failed.", detail = ex.Message });
@@ -45,3 +60,4 @@ public class AiSearchController : ControllerBase
         }
     }
 }
+
