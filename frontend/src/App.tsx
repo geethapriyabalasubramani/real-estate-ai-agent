@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LoginPanel } from './components/LoginPanel';
 import { PropertySearch } from './components/PropertySearch';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
+import { AiPropertySearch } from './components/AiPropertySearch';
 
 function App() {
   return (
@@ -14,7 +15,8 @@ function App() {
             path="/"
             element={
               <>
-                <p>Search listings (Phase 2)</p>
+               <AiPropertySearch />
+                <p>Filter search (Phase 2)</p>
                 <PropertySearch />
               </>
             }
