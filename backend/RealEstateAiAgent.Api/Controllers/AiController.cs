@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using Amazon.Runtime;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using RealEstateAiAgent.Api.Configuration;
 using RealEstateAiAgent.Api.Contracts;
@@ -16,11 +16,49 @@ public class AiController : ControllerBase
 {
     private readonly IBedrockChatService _bedrockChatService;
     private readonly BedrockOptions _bedrockOptions;
+    private readonly IEmbeddingService _embeddingService;
+    private readonly IWebHostEnvironment _environment;
 
-    public AiController(IBedrockChatService bedrockChatService, IOptions<BedrockOptions> bedrockOptions)
+    public AiController(
+        IBedrockChatService bedrockChatService,
+        IOptions<BedrockOptions> bedrockOptions,
+        IEmbeddingService embeddingService,
+        IWebHostEnvironment environment)
     {
         _bedrockChatService = bedrockChatService;
         _bedrockOptions = bedrockOptions.Value;
+        _embeddingService = embeddingService;
+        _environment = environment;
+    }
+
+    [HttpPost("embed")]
+    public async Task<ActionResult<EmbedTextResponse>> Embed(
+        [FromBody] EmbedTextRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!_environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        try
+        {
+            var vector = await _embeddingService.EmbedAsync(request.Text, cancellationToken);
+            var preview = vector.ToArray().Take(5).ToArray();
+            return Ok(new EmbedTextResponse(
+                _bedrockOptions.EmbeddingModelId,
+                vector.ToArray().Length,
+                preview));
+        }
+        catch (AmazonServiceException ex)
+        {
+            return StatusCode(502, new { error = "Bedrock embedding failed.", detail = ex.Message });
+        }
     }
 
     [HttpPost("complete")]

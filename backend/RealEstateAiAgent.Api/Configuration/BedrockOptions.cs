@@ -8,6 +8,10 @@ public class BedrockOptions
     public string ModelId { get; set; } = string.Empty;
     public int MaxTokens { get; set; } = 256;
     public double Temperature { get; set; } = 0.2;
+    public string EmbeddingModelId { get; set; } = "amazon.titan-embed-text-v2:0";
+
+/// <summary>Must match DB column vector(N) and Titan v2 dimensions.</summary>
+public int EmbeddingDimensions { get; set; } = 1024;
     public string SystemPrompt { get; set; } =
     "You are a helpful real estate assistant. Answer clearly and concisely.";
     public string ExtractionSystemPrompt { get; set; } =

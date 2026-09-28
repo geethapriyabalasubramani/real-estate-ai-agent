@@ -83,6 +83,7 @@ public static class BedrockServiceCollectionExtensions
                 serviceId: null);
 
         services.AddScoped<IBedrockChatService, BedrockChatService>();
+        services.AddScoped<IEmbeddingService, BedrockEmbeddingService>();
 
         return services;
     }
