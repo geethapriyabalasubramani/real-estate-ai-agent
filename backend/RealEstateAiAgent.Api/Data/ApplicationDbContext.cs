@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RealEstateAiAgent.Api.Models;
 
+
 namespace RealEstateAiAgent.Api.Data;
 
 public class ApplicationDbContext : DbContext
@@ -17,6 +18,9 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<Property>(entity =>
         {
+            modelBuilder.HasPostgresExtension("vector");
+            entity.Property(p => p.DescriptionEmbedding)
+    .HasColumnType("vector(1024)");
             entity.ToTable("Properties");
 
             entity.HasKey(p => p.Id);

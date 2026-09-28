@@ -1,4 +1,5 @@
 namespace RealEstateAiAgent.Api.Models;
+using Pgvector;
 
 public class Property
 {
@@ -20,4 +21,5 @@ public class Property
     public string Description { get; set; } = string.Empty;
 
     public DateTime CreatedAtUtc { get; set; }
+    public Vector? DescriptionEmbedding { get; set; }
 }

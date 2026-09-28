@@ -68,6 +68,9 @@ try
         else
         {
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+        options.UseNpgsql(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    npgsql => npgsql.UseVector());
         }
     });
 
