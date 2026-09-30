@@ -17,17 +17,20 @@ public class AiController : ControllerBase
     private readonly IBedrockChatService _bedrockChatService;
     private readonly BedrockOptions _bedrockOptions;
     private readonly IEmbeddingService _embeddingService;
+    private readonly IPropertyEmbeddingBackfillService _backfillService;
     private readonly IWebHostEnvironment _environment;
 
     public AiController(
         IBedrockChatService bedrockChatService,
         IOptions<BedrockOptions> bedrockOptions,
         IEmbeddingService embeddingService,
+        IPropertyEmbeddingBackfillService backfillService,
         IWebHostEnvironment environment)
     {
         _bedrockChatService = bedrockChatService;
         _bedrockOptions = bedrockOptions.Value;
         _embeddingService = embeddingService;
+        _backfillService = backfillService;
         _environment = environment;
     }
 
@@ -58,6 +61,26 @@ public class AiController : ControllerBase
         catch (AmazonServiceException ex)
         {
             return StatusCode(502, new { error = "Bedrock embedding failed.", detail = ex.Message });
+        }
+    }
+
+    [HttpPost("embeddings/backfill")]
+    public async Task<ActionResult<PropertyEmbeddingBackfillResponse>> BackfillPropertyEmbeddings(
+        CancellationToken cancellationToken)
+    {
+        if (!_environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            var result = await _backfillService.BackfillMissingAsync(cancellationToken);
+            return Ok(result);
+        }
+        catch (AmazonServiceException ex)
+        {
+            return StatusCode(502, new { error = "Bedrock embedding failed during backfill.", detail = ex.Message });
         }
     }
 

@@ -67,13 +67,11 @@ try
         }
         else
         {
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-        options.UseNpgsql(
-    builder.Configuration.GetConnectionString("DefaultConnection"),
-    npgsql => npgsql.UseVector());
+            options.UseNpgsql(
+                builder.Configuration.GetConnectionString("DefaultConnection"),
+                npgsql => npgsql.UseVector());
         }
     });
-
     // --- Auth (JWT) ---
     builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
@@ -120,8 +118,11 @@ try
     // --- Bedrock / Semantic Kernel (not needed for integration tests) ---
     if (!builder.Environment.IsEnvironment("Testing"))
     {
+        builder.Services.AddScoped<IHybridPropertySearchService, HybridPropertySearchService>();
         builder.Services.AddBedrockAi(builder.Configuration);
         builder.Services.AddScoped<INaturalLanguagePropertySearchService, NaturalLanguagePropertySearchService>();
+        builder.Services.AddScoped<ISemanticPropertySearchService, SemanticPropertySearchService>();
+        builder.Services.AddScoped<IPropertyEmbeddingBackfillService, PropertyEmbeddingBackfillService>();
     }
 
     builder.Services.AddEndpointsApiExplorer();

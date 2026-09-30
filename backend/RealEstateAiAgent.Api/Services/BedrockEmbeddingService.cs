@@ -5,6 +5,8 @@ using Amazon.BedrockRuntime.Model;
 using Microsoft.Extensions.Options;
 using Pgvector;
 using RealEstateAiAgent.Api.Configuration;
+using Microsoft.EntityFrameworkCore;
+using Pgvector.EntityFrameworkCore;
 
 namespace RealEstateAiAgent.Api.Services;
 

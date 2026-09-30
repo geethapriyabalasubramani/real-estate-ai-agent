@@ -15,10 +15,17 @@ namespace RealEstateAiAgent.Api.Controllers;
 public class AiSearchController : ControllerBase
 {
     private readonly INaturalLanguagePropertySearchService _naturalLanguageSearch;
+    private readonly ISemanticPropertySearchService _semanticPropertySearch;
+    private readonly IHybridPropertySearchService _hybridSearch;
 
-    public AiSearchController(INaturalLanguagePropertySearchService naturalLanguageSearch)
+    public AiSearchController(
+        INaturalLanguagePropertySearchService naturalLanguageSearch,
+        ISemanticPropertySearchService semanticPropertySearch,
+        IHybridPropertySearchService hybridSearch)
     {
         _naturalLanguageSearch = naturalLanguageSearch;
+        _semanticPropertySearch = semanticPropertySearch;
+        _hybridSearch = hybridSearch;
     }
 
     [HttpPost("search")]
@@ -57,6 +64,48 @@ public class AiSearchController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return StatusCode(503, new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("semantic-search")]
+    public async Task<ActionResult<SemanticPropertySearchResponse>> SemanticSearch(
+        [FromBody] SemanticPropertySearchRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        try
+        {
+            var response = await _semanticPropertySearch.SearchAsync(request, cancellationToken);
+            return Ok(response);
+        }
+        catch (AmazonServiceException ex)
+        {
+            return StatusCode(502, new { error = "Bedrock embedding failed.", detail = ex.Message });
+        }
+    }
+
+    [HttpPost("hybrid-search")]
+    public async Task<ActionResult<HybridPropertySearchResponse>> HybridSearch(
+        [FromBody] HybridPropertySearchRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        try
+        {
+            var response = await _hybridSearch.SearchAsync(request, cancellationToken);
+            return Ok(response);
+        }
+        catch (AmazonServiceException ex)
+        {
+            return StatusCode(502, new { error = "Bedrock request failed.", detail = ex.Message });
         }
     }
 }

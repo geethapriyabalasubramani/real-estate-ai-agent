@@ -18,10 +18,18 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<Property>(entity =>
         {
-            modelBuilder.HasPostgresExtension("vector");
-            entity.Property(p => p.DescriptionEmbedding)
-    .HasColumnType("vector(1024)");
             entity.ToTable("Properties");
+
+            if (Database.IsNpgsql())
+            {
+                modelBuilder.HasPostgresExtension("vector");
+                entity.Property(p => p.DescriptionEmbedding)
+                    .HasColumnType("vector(1024)");
+            }
+            else
+            {
+                entity.Ignore(p => p.DescriptionEmbedding);
+            }
 
             entity.HasKey(p => p.Id);
 
