@@ -19,6 +19,7 @@ flowchart LR
     NL[NL filter extraction]
     EMB[Embedding service]
     RAG[RAG ask]
+    AGENT[Agent tool loop]
   end
 
   subgraph data [Data]
@@ -34,6 +35,10 @@ flowchart LR
   REST --> NL
   REST --> EMB
   REST --> RAG
+  REST --> AGENT
+  AGENT --> NL
+  AGENT --> EMB
+  AGENT --> RAG
   NL --> BR
   EMB --> BR
   RAG --> BR
@@ -48,6 +53,7 @@ flowchart LR
 3. **Semantic search** — embed query → nearest neighbors on `DescriptionEmbedding` (`POST /api/v1/ai/semantic-search`).
 4. **Hybrid search** — semantic + filter search merged with reciprocal rank fusion (`POST /api/v1/ai/hybrid-search`).
 5. **RAG ask** — retrieve top‑k listings by embedding, answer with Claude using only that context (`POST /api/v1/ai/ask`).
+6. **Agent chat (Phase 6)** — Claude chooses tools (hybrid/semantic/filter/RAG/get property) in a JSON loop, then replies (`POST /api/v1/ai/agent/chat`).
 
 ---
 
@@ -71,7 +77,45 @@ real-estate-ai-agent/
 
 ---
 
-## How to run
+## How to run with Docker Compose (Phase 7)
+
+Runs **Postgres (pgvector)** + **API** together. Frontend still runs on the host with `npm run dev`.
+
+1. Copy env file and edit secrets (password, JWT key, AWS keys for Bedrock):
+
+   ```powershell
+   cd C:\Geetha\real-estate-ai-agent
+   copy .env.example .env
+   ```
+
+2. Stop any old standalone Postgres container if port **5433** is taken (`docker stop rea-postgres`).
+
+3. Build and start:
+
+   ```powershell
+   docker compose up --build
+   ```
+
+4. API: **http://localhost:5134** (Swagger in Development). Migrations + seed run on startup.
+
+5. One-time embeddings backfill (Bedrock):
+
+   ```powershell
+   Invoke-RestMethod -Method Post -Uri 'http://localhost:5134/api/v1/ai/embeddings/backfill'
+   ```
+
+6. Frontend (separate terminal):
+
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+
+Files: `docker-compose.yml`, `backend/RealEstateAiAgent.Api/Dockerfile`, `.env.example`.
+
+---
+
+## How to run (manual / without Compose)
 
 ### 1. PostgreSQL (Docker + pgvector)
 
@@ -159,6 +203,14 @@ Invoke-RestMethod -Method Post -Uri 'http://localhost:5134/api/v1/ai/semantic-se
 ```powershell
 $body = '{"question":"Which homes are walkable to transit in downtown San Jose?","topK":5}'
 Invoke-RestMethod -Method Post -Uri 'http://localhost:5134/api/v1/ai/ask' `
+  -ContentType 'application/json' -Body $body
+```
+
+**Agent chat (Phase 6)** — model picks tools, returns `reply` + `toolCalls` trace:
+
+```powershell
+$body = '{"message":"Find a 2-bedroom in San Jose under 900k walkable to transit and recommend one."}'
+Invoke-RestMethod -Method Post -Uri 'http://localhost:5134/api/v1/ai/agent/chat' `
   -ContentType 'application/json' -Body $body
 ```
 

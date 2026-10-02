@@ -22,6 +22,8 @@ public class BedrockChatService : IBedrockChatService
     public async Task<string> CompleteAsync(
         string prompt,
         string? systemPrompt = null,
+        int? maxTokens = null,
+        double? temperature = null,
         CancellationToken cancellationToken = default)
     {
         var chatCompletion = _kernel.GetRequiredService<IChatCompletionService>();
@@ -30,12 +32,14 @@ public class BedrockChatService : IBedrockChatService
         history.AddSystemMessage(systemPrompt ?? _options.SystemPrompt);
         history.AddUserMessage(prompt);
 
-        var maxTokens = _options.MaxTokens >= 1 ? _options.MaxTokens : 256;
+        var tokenLimit = maxTokens ?? _options.MaxTokens;
+        tokenLimit = tokenLimit >= 1 ? tokenLimit : 256;
+        var temp = temperature ?? _options.Temperature;
 
         var settings = new AmazonClaudeExecutionSettings
         {
-            MaxTokensToSample = maxTokens,
-            Temperature = (float)_options.Temperature,
+            MaxTokensToSample = tokenLimit,
+            Temperature = (float)temp,
         };
 
         var result = await chatCompletion.GetChatMessageContentsAsync(

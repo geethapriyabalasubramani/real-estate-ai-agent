@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { askPropertyQuestion } from '../api/aiSearchClient';
 import type { PropertyAskSourceItem } from '../types/aiSearch';
 
@@ -84,7 +85,9 @@ export function AiPropertyAsk() {
           <ul style={{ margin: 0, paddingLeft: '1.25rem' }}>
             {sources.map((source) => (
               <li key={source.id} style={{ marginBottom: '0.35rem' }}>
-                {source.addressLine1}, {source.city}, {source.state}
+                <Link to={`/properties/${source.id}`}>
+                  {source.addressLine1}, {source.city}, {source.state}
+                </Link>
                 <span style={{ color: '#666', fontSize: '0.85rem' }}>
                   {' '}
                   · score {source.similarityScore.toFixed(3)}

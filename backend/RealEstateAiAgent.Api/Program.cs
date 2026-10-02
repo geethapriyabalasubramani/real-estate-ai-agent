@@ -124,6 +124,8 @@ try
         builder.Services.AddScoped<ISemanticPropertySearchService, SemanticPropertySearchService>();
         builder.Services.AddScoped<IPropertyEmbeddingBackfillService, PropertyEmbeddingBackfillService>();
         builder.Services.AddScoped<IPropertyQuestionAnswerService, PropertyQuestionAnswerService>();
+        builder.Services.AddScoped<RealEstateAgentToolExecutor>();
+        builder.Services.AddScoped<IRealEstateAgentService, RealEstateAgentService>();
     }
 
     builder.Services.AddEndpointsApiExplorer();
@@ -151,6 +153,7 @@ try
 
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.Database.MigrateAsync();
         await PropertySeeder.SeedAsync(db);
 
         app.UseSwagger();

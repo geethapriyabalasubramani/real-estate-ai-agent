@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LoginPanel } from './components/LoginPanel';
 import { PropertySearch } from './components/PropertySearch';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
+import { AiAgentChat } from './components/AiAgentChat';
 import { AiHybridSearch } from './components/AiHybridSearch';
 import { AiPropertyAsk } from './components/AiPropertyAsk';
 import { AiPropertySearch } from './components/AiPropertySearch';
@@ -17,6 +18,7 @@ function App() {
             path="/"
             element={
               <>
+                <AiAgentChat />
                 <AiHybridSearch />
                 <AiPropertyAsk />
                 <details style={{ marginBottom: '2rem' }}>

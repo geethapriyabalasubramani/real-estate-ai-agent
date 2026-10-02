@@ -76,7 +76,7 @@ public class PropertyQuestionAnswerService : IPropertyQuestionAnswerService
         var answer = await _bedrockChatService.CompleteAsync(
             userPrompt,
             _options.RagSystemPrompt,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         return new PropertyAskResponse(question, answer, sources);
     }

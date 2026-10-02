@@ -53,3 +53,18 @@ export interface PropertyAskResponse {
   answer: string;
   sources: PropertyAskSourceItem[];
 }
+
+export interface AgentChatRequest {
+  message: string;
+}
+
+export interface AgentToolCallTrace {
+  toolName: string;
+  argumentsJson: string;
+  resultSummary: string;
+}
+
+export interface AgentChatResponse {
+  reply: string;
+  toolCalls: AgentToolCallTrace[];
+}

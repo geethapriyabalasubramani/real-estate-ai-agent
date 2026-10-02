@@ -37,7 +37,7 @@ public class NaturalLanguagePropertySearchService : INaturalLanguagePropertySear
         var raw = await _bedrockChatService.CompleteAsync(
             userPrompt,
             _options.ExtractionSystemPrompt,
-            cancellationToken);
+            cancellationToken: cancellationToken);
         var criteria = ParseCriteria(raw);
 
         var query = MapToQuery(criteria);

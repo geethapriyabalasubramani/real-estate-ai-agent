@@ -3,6 +3,8 @@ import type {
   HybridPropertySearchResponse,
   NaturalLanguageSearchRequest,
   NaturalLanguageSearchResponse,
+  AgentChatRequest,
+  AgentChatResponse,
   PropertyAskRequest,
   PropertyAskResponse,
 } from '../types/aiSearch';
@@ -20,6 +22,7 @@ import type {
     try {
       const body = JSON.parse(text) as {
         error?: string;
+        detail?: string;
         title?: string;
         errors?: Record<string, string[]>;
       };
@@ -29,6 +32,10 @@ import type {
         if (messages.length > 0) return messages.join(' ');
       }
   
+      if (body.detail) {
+        return body.detail;
+      }
+
       return body.error ?? body.title ?? text;
     } catch {
       return text;
@@ -93,4 +100,22 @@ export async function askPropertyQuestion(
   }
 
   return response.json() as Promise<PropertyAskResponse>;
+}
+
+export async function agentChat(
+  request: AgentChatRequest,
+  signal?: AbortSignal
+): Promise<AgentChatResponse> {
+  const response = await fetch(`${baseUrl}/api/v1/ai/agent/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: request.message.trim() }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.json() as Promise<AgentChatResponse>;
 }
