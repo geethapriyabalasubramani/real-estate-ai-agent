@@ -1,7 +1,11 @@
 import type {
-    NaturalLanguageSearchRequest,
-    NaturalLanguageSearchResponse,
-  } from '../types/aiSearch';
+  HybridPropertySearchRequest,
+  HybridPropertySearchResponse,
+  NaturalLanguageSearchRequest,
+  NaturalLanguageSearchResponse,
+  PropertyAskRequest,
+  PropertyAskResponse,
+} from '../types/aiSearch';
   
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   
@@ -48,3 +52,45 @@ import type {
   
     return response.json() as Promise<NaturalLanguageSearchResponse>;
   }
+
+export async function searchWithHybrid(
+  request: HybridPropertySearchRequest,
+  signal?: AbortSignal
+): Promise<HybridPropertySearchResponse> {
+  const response = await fetch(`${baseUrl}/api/v1/ai/hybrid-search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: request.query.trim(),
+      limit: request.limit ?? 10,
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.json() as Promise<HybridPropertySearchResponse>;
+}
+
+export async function askPropertyQuestion(
+  request: PropertyAskRequest,
+  signal?: AbortSignal
+): Promise<PropertyAskResponse> {
+  const response = await fetch(`${baseUrl}/api/v1/ai/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      question: request.question.trim(),
+      topK: request.topK ?? 5,
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.json() as Promise<PropertyAskResponse>;
+}

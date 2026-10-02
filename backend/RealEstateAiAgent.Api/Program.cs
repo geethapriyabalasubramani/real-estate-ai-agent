@@ -123,6 +123,7 @@ try
         builder.Services.AddScoped<INaturalLanguagePropertySearchService, NaturalLanguagePropertySearchService>();
         builder.Services.AddScoped<ISemanticPropertySearchService, SemanticPropertySearchService>();
         builder.Services.AddScoped<IPropertyEmbeddingBackfillService, PropertyEmbeddingBackfillService>();
+        builder.Services.AddScoped<IPropertyQuestionAnswerService, PropertyQuestionAnswerService>();
     }
 
     builder.Services.AddEndpointsApiExplorer();

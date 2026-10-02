@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { getMe, login, register } from '../api/authClient';
 import type { MeResponse } from '../types/auth';
 import { clearAccessToken, setAccessToken } from '../utils/authStorage';

@@ -17,15 +17,18 @@ public class AiSearchController : ControllerBase
     private readonly INaturalLanguagePropertySearchService _naturalLanguageSearch;
     private readonly ISemanticPropertySearchService _semanticPropertySearch;
     private readonly IHybridPropertySearchService _hybridSearch;
+    private readonly IPropertyQuestionAnswerService _propertyQa;
 
     public AiSearchController(
         INaturalLanguagePropertySearchService naturalLanguageSearch,
         ISemanticPropertySearchService semanticPropertySearch,
-        IHybridPropertySearchService hybridSearch)
+        IHybridPropertySearchService hybridSearch,
+        IPropertyQuestionAnswerService propertyQa)
     {
         _naturalLanguageSearch = naturalLanguageSearch;
         _semanticPropertySearch = semanticPropertySearch;
         _hybridSearch = hybridSearch;
+        _propertyQa = propertyQa;
     }
 
     [HttpPost("search")]
@@ -101,6 +104,27 @@ public class AiSearchController : ControllerBase
         try
         {
             var response = await _hybridSearch.SearchAsync(request, cancellationToken);
+            return Ok(response);
+        }
+        catch (AmazonServiceException ex)
+        {
+            return StatusCode(502, new { error = "Bedrock request failed.", detail = ex.Message });
+        }
+    }
+
+    [HttpPost("ask")]
+    public async Task<ActionResult<PropertyAskResponse>> Ask(
+        [FromBody] PropertyAskRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        try
+        {
+            var response = await _propertyQa.AskAsync(request, cancellationToken);
             return Ok(response);
         }
         catch (AmazonServiceException ex)

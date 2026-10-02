@@ -2,6 +2,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LoginPanel } from './components/LoginPanel';
 import { PropertySearch } from './components/PropertySearch';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
+import { AiHybridSearch } from './components/AiHybridSearch';
+import { AiPropertyAsk } from './components/AiPropertyAsk';
 import { AiPropertySearch } from './components/AiPropertySearch';
 
 function App() {
@@ -15,7 +17,14 @@ function App() {
             path="/"
             element={
               <>
-               <AiPropertySearch />
+                <AiHybridSearch />
+                <AiPropertyAsk />
+                <details style={{ marginBottom: '2rem' }}>
+                  <summary style={{ cursor: 'pointer', color: '#444' }}>
+                    NL-only AI search (Phase 4)
+                  </summary>
+                  <AiPropertySearch />
+                </details>
                 <p>Filter search (Phase 2)</p>
                 <PropertySearch />
               </>
