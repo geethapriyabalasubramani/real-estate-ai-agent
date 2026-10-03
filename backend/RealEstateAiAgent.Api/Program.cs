@@ -48,6 +48,11 @@ try
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
+    var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+        ?? builder.Configuration["Cors:Origins"]?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        ?? Array.Empty<string>();
+
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("FrontendDev", policy =>
@@ -56,6 +61,16 @@ try
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
+
+        if (corsOrigins.Length > 0)
+        {
+            options.AddPolicy("Frontend", policy =>
+            {
+                policy.WithOrigins(corsOrigins)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+        }
     });
 
     // --- Data ---
@@ -147,17 +162,34 @@ try
         });
     }
 
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        var applyMigrations = app.Environment.IsDevelopment()
+            || app.Configuration.GetValue<bool>("Database:ApplyMigrations");
+
+        if (applyMigrations)
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Database.MigrateAsync();
+
+            if (app.Environment.IsDevelopment()
+                || app.Configuration.GetValue<bool>("Database:Seed"))
+            {
+                await PropertySeeder.SeedAsync(db);
+            }
+        }
+    }
+
     if (app.Environment.IsDevelopment())
     {
         app.UseCors("FrontendDev");
-
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await db.Database.MigrateAsync();
-        await PropertySeeder.SeedAsync(db);
-
         app.UseSwagger();
         app.UseSwaggerUI();
+    }
+    else if (corsOrigins.Length > 0)
+    {
+        app.UseCors("Frontend");
     }
 
     if (!app.Environment.IsDevelopment())
